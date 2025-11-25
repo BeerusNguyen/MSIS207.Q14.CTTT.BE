@@ -1,0 +1,174 @@
+{
+  "recipes": [
+    {
+      "title": "Spaghetti Carbonara",
+      "ingredients": "400g spaghetti, 200g pancetta, 4 eggs, 100g parmesan cheese, black pepper, salt",
+      "servings": "4",
+      "instructions": "1. Cook spaghetti according to package directions.\n2. Fry pancetta until crispy.\n3. Beat eggs with parmesan.\n4. Drain pasta, mix with pancetta.\n5. Remove from heat, add egg mixture.\n6. Toss quickly and serve with black pepper.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 520 },
+          "PROCNT": { "quantity": 28 },
+          "CHOCDF": { "quantity": 65 },
+          "FAT": { "quantity": 18 },
+          "FIBTG": { "quantity": 3 },
+          "SUGAR": { "quantity": 2 },
+          "NA": { "quantity": 680 }
+        }
+      }
+    },
+    {
+      "title": "Chicken Stir Fry",
+      "ingredients": "500g chicken breast, 2 bell peppers, 1 onion, 3 cloves garlic, soy sauce, ginger, vegetable oil, rice",
+      "servings": "4",
+      "instructions": "1. Cut chicken into bite-sized pieces.\n2. Slice vegetables.\n3. Heat oil in wok, cook chicken until golden.\n4. Add vegetables and stir-fry for 5 minutes.\n5. Add soy sauce and ginger.\n6. Serve over rice.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 380 },
+          "PROCNT": { "quantity": 42 },
+          "CHOCDF": { "quantity": 28 },
+          "FAT": { "quantity": 12 },
+          "FIBTG": { "quantity": 4 },
+          "SUGAR": { "quantity": 6 },
+          "NA": { "quantity": 920 }
+        }
+      }
+    },
+    {
+      "title": "Greek Salad",
+      "ingredients": "4 tomatoes, 1 cucumber, 1 red onion, 200g feta cheese, kalamata olives, olive oil, lemon juice, oregano",
+      "servings": "4",
+      "instructions": "1. Chop tomatoes and cucumber into chunks.\n2. Slice red onion thinly.\n3. Add olives and feta cheese.\n4. Drizzle with olive oil and lemon juice.\n5. Sprinkle with oregano.\n6. Toss gently and serve.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 220 },
+          "PROCNT": { "quantity": 8 },
+          "CHOCDF": { "quantity": 12 },
+          "FAT": { "quantity": 16 },
+          "FIBTG": { "quantity": 3 },
+          "SUGAR": { "quantity": 7 },
+          "NA": { "quantity": 520 }
+        }
+      }
+    },
+    {
+      "title": "Beef Tacos",
+      "ingredients": "500g ground beef, taco shells, lettuce, tomatoes, cheese, sour cream, taco seasoning, onion",
+      "servings": "6",
+      "instructions": "1. Brown ground beef in a pan.\n2. Add taco seasoning and water.\n3. Simmer for 10 minutes.\n4. Warm taco shells.\n5. Fill with beef, lettuce, tomatoes, cheese.\n6. Top with sour cream.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 450 },
+          "PROCNT": { "quantity": 26 },
+          "CHOCDF": { "quantity": 32 },
+          "FAT": { "quantity": 24 },
+          "FIBTG": { "quantity": 4 },
+          "SUGAR": { "quantity": 3 },
+          "NA": { "quantity": 780 }
+        }
+      }
+    },
+    {
+      "title": "Vegetable Curry",
+      "ingredients": "2 potatoes, 1 cauliflower, 2 carrots, peas, coconut milk, curry powder, onion, garlic, ginger, tomatoes",
+      "servings": "6",
+      "instructions": "1. Chop all vegetables.\n2. Sauté onion, garlic, and ginger.\n3. Add curry powder and cook for 1 minute.\n4. Add vegetables and tomatoes.\n5. Pour in coconut milk.\n6. Simmer for 30 minutes until vegetables are tender.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 280 },
+          "PROCNT": { "quantity": 8 },
+          "CHOCDF": { "quantity": 38 },
+          "FAT": { "quantity": 12 },
+          "FIBTG": { "quantity": 8 },
+          "SUGAR": { "quantity": 10 },
+          "NA": { "quantity": 420 }
+        }
+      }
+    },
+    {
+      "title": "Salmon with Asparagus",
+      "ingredients": "4 salmon fillets, 500g asparagus, lemon, olive oil, garlic, dill, salt, pepper",
+      "servings": "4",
+      "instructions": "1. Preheat oven to 200°C.\n2. Place salmon and asparagus on baking sheet.\n3. Drizzle with olive oil and lemon juice.\n4. Season with garlic, dill, salt, and pepper.\n5. Bake for 15-20 minutes.\n6. Serve with lemon wedges.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 340 },
+          "PROCNT": { "quantity": 36 },
+          "CHOCDF": { "quantity": 8 },
+          "FAT": { "quantity": 18 },
+          "FIBTG": { "quantity": 4 },
+          "SUGAR": { "quantity": 3 },
+          "NA": { "quantity": 280 }
+        }
+      }
+    },
+    {
+      "title": "Mushroom Risotto",
+      "ingredients": "300g arborio rice, 400g mushrooms, 1L vegetable stock, white wine, parmesan, onion, garlic, butter",
+      "servings": "4",
+      "instructions": "1. Sauté onion and garlic in butter.\n2. Add mushrooms and cook until soft.\n3. Add rice and stir for 2 minutes.\n4. Add wine and let it absorb.\n5. Add stock one ladle at a time, stirring constantly.\n6. Finish with parmesan and butter.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 420 },
+          "PROCNT": { "quantity": 12 },
+          "CHOCDF": { "quantity": 68 },
+          "FAT": { "quantity": 10 },
+          "FIBTG": { "quantity": 3 },
+          "SUGAR": { "quantity": 4 },
+          "NA": { "quantity": 640 }
+        }
+      }
+    },
+    {
+      "title": "Chocolate Chip Cookies",
+      "ingredients": "200g butter, 200g sugar, 2 eggs, 300g flour, chocolate chips, vanilla extract, baking soda, salt",
+      "servings": "24 cookies",
+      "instructions": "1. Cream butter and sugar.\n2. Beat in eggs and vanilla.\n3. Mix in flour, baking soda, and salt.\n4. Fold in chocolate chips.\n5. Drop spoonfuls on baking sheet.\n6. Bake at 180°C for 10-12 minutes.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 180 },
+          "PROCNT": { "quantity": 2 },
+          "CHOCDF": { "quantity": 22 },
+          "FAT": { "quantity": 9 },
+          "FIBTG": { "quantity": 1 },
+          "SUGAR": { "quantity": 14 },
+          "NA": { "quantity": 120 }
+        }
+      }
+    },
+    {
+      "title": "Thai Green Curry",
+      "ingredients": "500g chicken, green curry paste, coconut milk, bamboo shoots, Thai basil, fish sauce, palm sugar, lime",
+      "servings": "4",
+      "instructions": "1. Heat coconut cream, add curry paste.\n2. Cook chicken until done.\n3. Add coconut milk and bring to boil.\n4. Add bamboo shoots and simmer.\n5. Season with fish sauce and sugar.\n6. Garnish with basil and lime.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 380 },
+          "PROCNT": { "quantity": 32 },
+          "CHOCDF": { "quantity": 18 },
+          "FAT": { "quantity": 22 },
+          "FIBTG": { "quantity": 2 },
+          "SUGAR": { "quantity": 8 },
+          "NA": { "quantity": 890 }
+        }
+      }
+    },
+    {
+      "title": "Caesar Salad",
+      "ingredients": "Romaine lettuce, croutons, parmesan cheese, caesar dressing, chicken breast (optional), anchovies, lemon",
+      "servings": "4",
+      "instructions": "1. Wash and chop romaine lettuce.\n2. Grill chicken if using.\n3. Toss lettuce with caesar dressing.\n4. Add croutons and parmesan.\n5. Top with grilled chicken.\n6. Serve immediately.",
+      "nutrition": {
+        "totalNutrients": {
+          "ENERC_KCAL": { "quantity": 320 },
+          "PROCNT": { "quantity": 24 },
+          "CHOCDF": { "quantity": 18 },
+          "FAT": { "quantity": 18 },
+          "FIBTG": { "quantity": 3 },
+          "SUGAR": { "quantity": 2 },
+          "NA": { "quantity": 720 }
+        }
+      }
+    }
+  ]
+}
