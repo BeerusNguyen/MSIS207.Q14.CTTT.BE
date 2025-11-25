@@ -7,8 +7,17 @@ RESTful API backend for Recipe Finder and Meal Planner application.
 - **Node.js** & **Express.js** 5.1.0 - Web framework
 - **MySQL** - Relational database
 - **MySQL2** 3.15.3 - MySQL driver for Node.js
+- **Swagger/OpenAPI 3.0** - API Documentation
 - **CORS** - Cross-Origin Resource Sharing
 - **dotenv** - Environment variable management
+
+## 📚 API Documentation
+
+**Interactive Swagger UI:**
+- Local: http://localhost:3000/api-docs
+- Production: https://your-api-url.onrender.com/api-docs
+
+For detailed API documentation, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
 
 ## 📋 Prerequisites
 
@@ -125,6 +134,13 @@ Recipe-Finder-BE/
 ```
 
 ## 🔌 API Endpoints
+
+### 📖 Swagger Documentation (Recommended)
+Visit http://localhost:3000/api-docs for interactive API documentation with:
+- Try-it-out functionality
+- Request/Response examples
+- Schema definitions
+- All endpoints organized by category
 
 ### Health Check
 ```http
