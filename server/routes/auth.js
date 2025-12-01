@@ -114,7 +114,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'htt
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register a new user
+ *     summary: Register a new user (requires email verification)
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -124,11 +124,18 @@ const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CORS_ORIGIN || 'htt
  *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered successfully, verification email sent
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 requiresVerification:
+ *                   type: boolean
  *       400:
  *         description: Validation error or user already exists
  *       500:
@@ -164,11 +171,33 @@ router.post('/register', [
 
     // Check if user exists
     const [existingUsers] = await pool.query(
-      'SELECT id FROM users WHERE username = ? OR email = ?',
+      'SELECT id, is_verified FROM users WHERE username = ? OR email = ?',
       [username, email]
     );
 
     if (existingUsers.length > 0) {
+      const existingUser = existingUsers[0];
+      
+      // If email exists but not verified, allow resending verification
+      if (existingUser.is_verified === 0) {
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        await pool.query(
+          'UPDATE users SET verification_token = ?, verification_token_expiry = ? WHERE id = ?',
+          [verificationToken, verificationExpiry, existingUser.id]
+        );
+
+        // Resend verification email
+        await sendVerificationEmail(email, username, verificationToken);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Account exists but not verified. New verification email sent.',
+          requiresVerification: true
+        });
+      }
+
       return res.status(400).json({ 
         success: false,
         message: 'Username or email already exists' 
@@ -179,57 +208,24 @@ router.post('/register', [
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Create user (is_verified = FALSE)
     const [result] = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email, hashedPassword]
+      'INSERT INTO users (username, email, password, is_verified, verification_token, verification_token_expiry) VALUES (?, ?, ?, FALSE, ?, ?)',
+      [username, email, hashedPassword, verificationToken, verificationExpiry]
     );
 
-    // Generate JWT
-    const token = jwt.sign(
-      { id: result.insertId, username, email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
-
-    // Send welcome email
-    const welcomeMailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@recipe-finder.com',
-      to: email,
-      subject: 'Chào mừng bạn đến với Recipe Finder! 🍽️',
-      html: `
-        <h2>Xin chào ${username}!</h2>
-        <p>Chúc mừng bạn đã tạo tài khoản thành công tại <strong>Recipe Finder</strong>! 🎉</p>
-        
-        <h3>Về trang web của chúng tôi:</h3>
-        <ul>
-          <li>🔍 <strong>Tìm kiếm công thức:</strong> Khám phá hàng ngàn công thức nấu ăn từ khắp nơi trên thế giới</li>
-          <li>💾 <strong>Lưu công thức yêu thích:</strong> Lưu trữ những công thức bạn thích để dễ dàng tìm lại</li>
-          <li>🥗 <strong>Thông tin dinh dưỡng:</strong> Xem chi tiết calories và các chất dinh dưỡng của mỗi món ăn</li>
-          <li>🍳 <strong>Hướng dẫn nấu ăn:</strong> Các bước làm chi tiết và dễ hiểu</li>
-        </ul>
-        
-        <p>Bắt đầu khám phá ngay tại: <a href="${FRONTEND_URL}">Recipe Finder</a></p>
-        
-        <p>Chúc bạn có những trải nghiệm tuyệt vời!</p>
-        <p><em>— Đội ngũ Recipe Finder</em></p>
-      `
-    };
-
-    transporter.sendMail(welcomeMailOptions, (err, info) => {
-      if (err) console.error('Error sending welcome email:', err);
-      else console.log('Welcome email sent:', info.response || info);
-    });
+    // Send verification email
+    await sendVerificationEmail(email, username, verificationToken);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: result.insertId,
-        username,
-        email
-      }
+      message: 'Registration successful! Please check your email to verify your account.',
+      requiresVerification: true,
+      userId: result.insertId
     });
 
   } catch (error) {
@@ -241,11 +237,211 @@ router.post('/register', [
   }
 });
 
+// Helper function to send verification email
+async function sendVerificationEmail(email, username, token) {
+  const verificationUrl = `${FRONTEND_URL}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+
+  const mailOptions = {
+    from: process.env.FROM_EMAIL || 'noreply@recipe-finder.com',
+    to: email,
+    subject: '🍳 Verify Your Email - Recipe Finder',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #f2d14d 0%, #d17701 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; background: linear-gradient(135deg, #f2d14d 0%, #d17701 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 5px; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🍳 Recipe Finder</h1>
+            <p>Welcome to the world of culinary delights!</p>
+          </div>
+          <div class="content">
+            <h2>Hello ${username}! 👋</h2>
+            <p>Thank you for registering an account with Recipe Finder!</p>
+            <p>Please click the button below to verify your email:</p>
+            
+            <div style="text-align: center;">
+              <a href="${verificationUrl}" class="button">✅ Verify Email</a>
+            </div>
+            
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; background: #eee; padding: 10px; border-radius: 5px; font-size: 12px;">
+              ${verificationUrl}
+            </p>
+            
+            <div class="warning">
+              ⚠️ This link will expire in <strong>24 hours</strong>.
+            </div>
+            
+            <p>If you did not create this account, please ignore this email.</p>
+          </div>
+          <div class="footer">
+            <p>© 2024 Recipe Finder. All rights reserved.</p>
+            <p>This is an automated email, please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  return transporter.sendMail(mailOptions);
+}
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   get:
+ *     summary: Verify email with token
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired token
+ */
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token, email } = req.query;
+
+    if (!token || !email) {
+      return res.status(400).json({ success: false, message: 'Token and email are required' });
+    }
+
+    // Find user with matching token
+    const [users] = await pool.query(
+      `SELECT * FROM users 
+       WHERE email = ? 
+       AND verification_token = ? 
+       AND verification_token_expiry > NOW()`,
+      [email, token]
+    );
+
+    if (users.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired verification token' });
+    }
+
+    // Update user as verified
+    await pool.query(
+      `UPDATE users 
+       SET is_verified = TRUE, 
+           verification_token = NULL, 
+           verification_token_expiry = NULL 
+       WHERE email = ?`,
+      [email]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully! You can now log in.',
+      verified: true
+    });
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ success: false, message: 'Error verifying email' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Resend verification email
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Verification email sent
+ *       400:
+ *         description: Email not found or already verified
+ */
+router.post('/resend-verification', [
+  body('email').trim().isEmail().withMessage('Valid email is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    // Find user
+    const [users] = await pool.query(
+      'SELECT id, username, is_verified FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: 'Email not found' });
+    }
+
+    const user = users[0];
+
+    if (user.is_verified) {
+      return res.status(400).json({ success: false, message: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await pool.query(
+      'UPDATE users SET verification_token = ?, verification_token_expiry = ? WHERE email = ?',
+      [verificationToken, verificationExpiry, email]
+    );
+
+    // Send verification email
+    await sendVerificationEmail(email, user.username, verificationToken);
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent! Please check your inbox.'
+    });
+
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ success: false, message: 'Error sending verification email' });
+  }
+});
+
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Login user
+ *     summary: Login user (requires verified email)
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -262,6 +458,8 @@ router.post('/register', [
  *               $ref: '#/components/schemas/AuthResponse'
  *       400:
  *         description: Invalid credentials
+ *       403:
+ *         description: Email not verified
  *       500:
  *         description: Server error
  */
@@ -283,7 +481,7 @@ router.post('/login', [
 
     // Find user
     const [users] = await pool.query(
-      'SELECT id, username, email, password FROM users WHERE username = ?',
+      'SELECT id, username, email, password, is_verified FROM users WHERE username = ?',
       [username]
     );
 
@@ -295,6 +493,16 @@ router.post('/login', [
     }
 
     const user = users[0];
+
+    // Check if email is verified
+    if (!user.is_verified) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Please verify your email before logging in',
+        requiresVerification: true,
+        email: user.email
+      });
+    }
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
