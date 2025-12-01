@@ -33,23 +33,53 @@ https://your-api-url.onrender.com/api-docs
 
 ---
 
+## 📊 API Statistics
+
+| Category | Endpoints | Description |
+|----------|-----------|-------------|
+| Authentication | 5 | Register, Login, Get User, Forgot Password, Reset Password |
+| Recipes | 2 | Get all recipes, Get recipe by ID |
+| Favorites | 3 | Manage favorite recipes |
+| Meal Planner | 4 | Manage meal plans |
+| Shopping List | 5 | Manage shopping list |
+| Statistics | 1 | Nutrition summary |
+| **Total** | **20** | **All API Endpoints** |
+
+---
+
 ## 📋 Available Endpoints
 
-### 🏠 Root
-- **GET /** - API information and available endpoints
-
-### ❤️ Health Check
-- **GET /health** - Server health status
+### 🔐 Authentication
+- **POST /api/auth/register** - Register a new user
+- **POST /api/auth/login** - Login user
+- **GET /api/auth/me** - Get current user info (requires auth)
+- **POST /api/auth/forgot-password** - Request password reset email
+- **POST /api/auth/reset-password** - Reset password with token
 
 ### 🍳 Recipes
-- **GET /recipes** - Get all recipes
-- **GET /recipes/:id** - Get a specific recipe by ID
-- **POST /recipes** - Create a new recipe
-- **PUT /recipes/:id** - Update an existing recipe
-- **DELETE /recipes/:id** - Delete a recipe
+- **GET /recipes** - Get all recipes for user (requires auth)
+- **GET /recipes/:id** - Get a specific recipe by ID (requires auth)
 
-### 📊 Nutrition
-- **GET /recipes/:id/nutrition** - Get nutrition information for a recipe
+### ❤️ Favorites
+- **GET /api/favorites** - Get user's favorite recipes (requires auth)
+- **POST /api/favorites** - Add recipe to favorites (requires auth)
+- **DELETE /api/favorites/:recipeId** - Remove from favorites (requires auth)
+
+### 📅 Meal Planner
+- **GET /api/meal-plans** - Get meal plans with optional date filter (requires auth)
+- **POST /api/meal-plans** - Create a meal plan (requires auth)
+- **PUT /api/meal-plans/:id** - Update a meal plan (requires auth)
+- **DELETE /api/meal-plans/:id** - Delete a meal plan (requires auth)
+
+### 🛒 Shopping List
+- **GET /api/shopping-list** - Get shopping list (requires auth)
+- **POST /api/shopping-list** - Add item to list (requires auth)
+- **PATCH /api/shopping-list/:id/toggle** - Toggle item checked status (requires auth)
+- **DELETE /api/shopping-list/:id** - Remove item (requires auth)
+- **DELETE /api/shopping-list/clear-checked** - Clear all checked items (requires auth)
+
+### 📊 Statistics
+- **GET /api/stats/nutrition-summary** - Get nutrition summary for a date (requires auth)
 
 ---
 
@@ -63,48 +93,71 @@ https://your-api-url.onrender.com/api-docs
 5. Click "Execute"
 6. View the response
 
+### Authentication Headers
+Most endpoints require authentication. Use the Bearer token:
+```
+Authorization: Bearer <your_jwt_token>
+```
+
 ### Using PowerShell
 ```powershell
-# Get all recipes
-Invoke-RestMethod -Uri "http://localhost:3000/recipes"
-
-# Get recipe by ID
-Invoke-RestMethod -Uri "http://localhost:3000/recipes/1"
-
-# Create new recipe
+# Register new user
 $body = @{
-    title = "Test Recipe"
-    ingredients = "ingredient1, ingredient2"
-    servings = "4"
-    instructions = "Step 1, Step 2..."
+    username = "testuser"
+    email = "test@example.com"
+    password = "Test123456"
 } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://localhost:3000/api/auth/register" -Method POST -Body $body -ContentType "application/json"
 
-Invoke-RestMethod -Uri "http://localhost:3000/recipes" -Method POST -Body $body -ContentType "application/json"
+# Login
+$body = @{
+    email = "test@example.com"
+    password = "Test123456"
+} | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:3000/api/auth/login" -Method POST -Body $body -ContentType "application/json"
+$token = $response.token
 
-# Health check
-Invoke-RestMethod -Uri "http://localhost:3000/health"
+# Get all recipes (with auth)
+$headers = @{ Authorization = "Bearer $token" }
+Invoke-RestMethod -Uri "http://localhost:3000/recipes" -Headers $headers
+
+# Get favorites (with auth)
+Invoke-RestMethod -Uri "http://localhost:3000/api/favorites" -Headers $headers
+
+# Get meal plans (with auth)
+Invoke-RestMethod -Uri "http://localhost:3000/api/meal-plans" -Headers $headers
+
+# Get shopping list (with auth)
+Invoke-RestMethod -Uri "http://localhost:3000/api/shopping-list" -Headers $headers
 ```
 
 ### Using cURL
 ```bash
-# Get all recipes
-curl http://localhost:3000/recipes
-
-# Get recipe by ID
-curl http://localhost:3000/recipes/1
-
-# Create new recipe
-curl -X POST http://localhost:3000/recipes \
+# Register
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{
-    "title": "Test Recipe",
-    "ingredients": "ingredient1, ingredient2",
-    "servings": "4",
-    "instructions": "Step 1, Step 2..."
-  }'
+  -d '{"username":"testuser","email":"test@example.com","password":"Test123456"}'
 
-# Health check
-curl http://localhost:3000/health
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Test123456"}'
+
+# Get recipes (with auth)
+curl http://localhost:3000/recipes \
+  -H "Authorization: Bearer <your_jwt_token>"
+
+# Get favorites (with auth)
+curl http://localhost:3000/api/favorites \
+  -H "Authorization: Bearer <your_jwt_token>"
+
+# Get meal plans (with auth)
+curl http://localhost:3000/api/meal-plans \
+  -H "Authorization: Bearer <your_jwt_token>"
+
+# Get shopping list (with auth)
+curl http://localhost:3000/api/shopping-list \
+  -H "Authorization: Bearer <your_jwt_token>"
 ```
 
 ---
@@ -115,6 +168,7 @@ curl http://localhost:3000/health
 **Request:**
 ```
 GET /recipes
+Authorization: Bearer <token>
 ```
 
 **Response:**
@@ -131,82 +185,85 @@ GET /recipes
 ]
 ```
 
-### Get Recipe by ID
+### Get Favorites
 **Request:**
 ```
-GET /recipes/1
+GET /api/favorites
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "recipe_id": "12345",
+    "title": "Chicken Curry",
+    "image": "https://example.com/image.jpg",
+    "source_type": "spoonacular",
+    "created_at": "2025-11-25T14:30:00.000Z"
+  }
+]
+```
+
+### Get Meal Plans
+**Request:**
+```
+GET /api/meal-plans?startDate=2025-12-01&endDate=2025-12-07
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "recipe_id": "12345",
+    "meal_date": "2025-12-01",
+    "meal_type": "breakfast",
+    "notes": "Healthy breakfast",
+    "created_at": "2025-11-30T10:00:00.000Z"
+  }
+]
+```
+
+### Get Shopping List
+**Request:**
+```
+GET /api/shopping-list
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "ingredient": "Chicken breast",
+    "quantity": "500g",
+    "is_checked": false,
+    "recipe_id": "12345",
+    "created_at": "2025-11-30T10:00:00.000Z"
+  }
+]
+```
+
+### Nutrition Summary
+**Request:**
+```
+GET /api/stats/nutrition-summary?date=2025-12-01
+Authorization: Bearer <token>
 ```
 
 **Response:**
 ```json
 {
-  "id": 1,
-  "title": "Spaghetti Carbonara",
-  "ingredients": "400g spaghetti, 200g pancetta, 4 eggs...",
-  "servings": "4",
-  "instructions": "Cook pasta, fry pancetta...",
-  "created_at": "2025-11-24T10:30:00.000Z"
-}
-```
-
-### Create Recipe
-**Request:**
-```
-POST /recipes
-Content-Type: application/json
-
-{
-  "title": "Chicken Curry",
-  "ingredients": "500g chicken, curry powder, coconut milk",
-  "servings": "4",
-  "instructions": "Cook chicken, add curry powder..."
-}
-```
-
-**Response:**
-```json
-{
-  "id": 12,
-  "title": "Chicken Curry",
-  "ingredients": "500g chicken, curry powder, coconut milk",
-  "servings": "4",
-  "instructions": "Cook chicken, add curry powder...",
-  "created_at": "2025-11-24T11:00:00.000Z"
-}
-```
-
-### Get Nutrition
-**Request:**
-```
-GET /recipes/1/nutrition
-```
-
-**Response:**
-```json
-{
-  "id": 1,
-  "recipe_id": 1,
-  "calories": 520.00,
-  "protein": 28.00,
-  "carbs": 65.00,
-  "fat": 18.00,
-  "fiber": 3.00,
-  "sugar": 2.00,
-  "sodium": 680.00
-}
-```
-
-### Health Check
-**Request:**
-```
-GET /health
-```
-
-**Response:**
-```json
-{
-  "status": "OK",
-  "message": "Server is running"
+  "date": "2025-12-01",
+  "totalCalories": 1850,
+  "totalProtein": 95,
+  "totalCarbs": 220,
+  "totalFat": 65,
+  "meals": [...]
 }
 ```
 
@@ -241,7 +298,7 @@ The API uses **Swagger/OpenAPI 3.0** specification with the following features:
 The Swagger UI has been customized with:
 - Hidden top bar for cleaner look
 - Custom site title: "Recipe Finder API Documentation"
-- Organized endpoint grouping (Recipes, Nutrition, Health)
+- Organized endpoint grouping
 - Multiple server configurations (Development & Production)
 
 ---
@@ -286,6 +343,7 @@ For API issues or questions:
 
 ---
 
-**Last Updated:** November 24, 2025  
+**Last Updated:** December 1, 2025  
 **API Version:** 1.0.0  
 **Documentation:** Swagger/OpenAPI 3.0
+

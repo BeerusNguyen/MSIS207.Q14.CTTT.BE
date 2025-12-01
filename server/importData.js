@@ -8,6 +8,13 @@ async function importData() {
         console.log('🔄 Initializing database...');
         await initDatabase();
 
+        // Clear existing data
+        console.log('🗑️  Clearing existing data...');
+        await pool.query('DELETE FROM nutrition');
+        await pool.query('DELETE FROM recipes');
+        await pool.query('ALTER TABLE recipes AUTO_INCREMENT = 1');
+        console.log('✅ Existing data cleared');
+
         // Read db.json file
         const dbJsonPath = path.join(__dirname, '..', 'db.json');
         const rawData = fs.readFileSync(dbJsonPath, 'utf8');
@@ -21,14 +28,15 @@ async function importData() {
         // Import each recipe
         for (const recipe of jsonData.recipes) {
             try {
-                // Insert recipe
+                // Insert recipe with image
                 const [result] = await pool.query(
-                    'INSERT INTO recipes (title, ingredients, servings, instructions) VALUES (?, ?, ?, ?)',
+                    'INSERT INTO recipes (title, ingredients, servings, instructions, image) VALUES (?, ?, ?, ?, ?)',
                     [
                         recipe.title || 'Untitled Recipe',
                         recipe.ingredients || '',
                         recipe.servings || '1',
-                        recipe.instructions || ''
+                        recipe.instructions || '',
+                        recipe.image || null
                     ]
                 );
 
